@@ -1,0 +1,686 @@
+<style>
+  /* Local styles for Refund Page specific elements */
+  .metadata-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+
+  .metadata-item input[type="text"] {
+    flex: 1;
+  }
+
+  .add-metadata,
+  .remove-metadata {
+    display: inline-block;
+    margin-top: 10px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .add-metadata:hover,
+  .remove-metadata:hover {
+    text-decoration: underline;
+  }
+
+  .remove-metadata.disabled {
+    cursor: not-allowed;
+    color: #6c757d;
+  }
+
+  /* Full-Page Overlay for processing */
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(248, 249, 250, 0.8);
+    display: none;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  #overlay .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  #overlay p {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    color: #343a40;
+  }
+
+  .hero-section {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+
+  .powered-by-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(230, 230, 230, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .powered-by-text {
+    font-size: 1rem;
+    color: #555;
+    margin-right: 8px;
+    opacity: 0.8;
+  }
+
+  .pawapay-logo {
+    max-width: 120px;
+    height: auto;
+    opacity: 0.8;
+  }
+</style>
+
+<main>
+  <div class="container mt-5 mb-5" style="max-width: 800px;">
+    
+    <div class="hero-section shadow-sm text-center">
+      <h1 class="mb-3">Initiate Refund</h1>
+      <p class="text-muted">
+        Provide the necessary details to initiate a refund, including a valid
+        <strong>Deposit ID</strong> (UUID), the <strong>Refund Amount</strong>,
+        and any additional metadata.
+      </p>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <form id="refundForm" class="needs-validation" novalidate>
+      
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Transaction Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <label for="depositId" class="form-label">Deposit ID (UUID):</label>
+            <input
+              type="text"
+              id="depositId"
+              name="depositId"
+              class="form-control"
+              placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000"
+              required
+            />
+            <div class="form-text">
+              The unique identifier for the original deposit transaction.
+            </div>
+            <div class="invalid-feedback">
+              Please enter a valid Deposit ID (UUID).
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="amount" class="form-label">Refund Amount:</label>
+            <input
+              type="text"
+              id="amount"
+              name="amount"
+              class="form-control"
+              placeholder="e.g. 5000"
+              required
+            />
+            <div class="form-text">
+              The amount you want to refund to the customer (full or partial).
+            </div>
+            <div class="invalid-feedback">Please enter the refund amount.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-primary mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Metadata</h5>
+        </div>
+        <div class="card-body" id="metadata-group">
+          <p class="card-text text-muted mb-3">
+            Metadata provides additional context like <strong>orderId</strong> and
+            <strong>customerId</strong>.
+          </p>
+
+          <div class="metadata-item">
+            <input
+              type="text"
+              name="metadataFieldName[]"
+              value="orderId"
+              class="form-control"
+              readonly
+              required
+            />
+            <input
+              type="text"
+              name="metadataFieldValue[]"
+              value="ORD-123456789"
+              class="form-control"
+              required
+            />
+            <label style="display: inline-block; margin-left: 5px">
+              <input type="checkbox" name="metadataIsPII[]" value="1" />
+              PII
+            </label>
+            <span class="remove-metadata disabled text-secondary">Remove</span>
+          </div>
+
+          <div class="metadata-item">
+            <input
+              type="text"
+              name="metadataFieldName[]"
+              value="customerId"
+              class="form-control"
+              readonly
+              required
+            />
+            <input
+              type="text"
+              name="metadataFieldValue[]"
+              value="customer@email.com"
+              class="form-control"
+              required
+            />
+            <label style="display: inline-block; margin-left: 5px">
+              <input
+                type="checkbox"
+                name="metadataIsPII[]"
+                value="1"
+                checked
+                disabled
+              />
+              PII
+            </label>
+            <span class="remove-metadata disabled text-secondary">Remove</span>
+          </div>
+        </div>
+        <div class="card-footer bg-white">
+          <span class="add-metadata text-primary" onclick="addMetadataField()">
+            + Add More Metadata
+          </span>
+          <div class="error text-danger mt-2" id="error-message"></div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">
+          Initiate Refund
+        </button>
+      </div>
+    </form>
+
+    <div class="powered-by-container text-center mt-5">
+      <span class="powered-by-text">Powered by</span>
+      <img
+        src="images/powered_by_pawapay.png"
+        alt="Pawapay Logo"
+        class="pawapay-logo"
+      />
+    </div>
+
+    <div id="overlay">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Processing...</span>
+      </div>
+      <p>Please wait while we process your refund...</p>
+    </div>
+
+  </div>
+</main>
+
+<script id="country-catalog-data" type="application/json">
+  <%- typeof catalog !== 'undefined' ? JSON.stringify(catalog) : '{}' %>
+</script>
+
+<script type="module" src="/js/addDependencies.js"></script>
+
+<script>
+  function addMetadataField() {
+    var metadataGroup = document.getElementById("metadata-group");
+    var metadataItems = metadataGroup.getElementsByClassName("metadata-item");
+
+    // Limit to a maximum of 10 metadata fields
+    if (metadataItems.length >= 10) {
+      document.getElementById("error-message").textContent =
+        "You can't add more than 10 metadata fields.";
+      return;
+    } else {
+      document.getElementById("error-message").textContent = "";
+    }
+
+    var metadataItem = document.createElement("div");
+    metadataItem.className = "metadata-item";
+
+    var fieldNameInput = document.createElement("input");
+    fieldNameInput.type = "text";
+    fieldNameInput.name = "metadataFieldName[]";
+    fieldNameInput.placeholder = "Field Name";
+    fieldNameInput.className = "form-control";
+    fieldNameInput.required = true;
+
+    var fieldValueInput = document.createElement("input");
+    fieldValueInput.type = "text";
+    fieldValueInput.name = "metadataFieldValue[]";
+    fieldValueInput.placeholder = "Field Value";
+    fieldValueInput.className = "form-control";
+    fieldValueInput.required = true;
+
+    var isPIIInput = document.createElement("input");
+    isPIIInput.type = "checkbox";
+    isPIIInput.name = "metadataIsPII[]";
+    isPIIInput.value = "1";
+
+    var isPIILabel = document.createElement("label");
+    isPIILabel.style.display = "inline-block";
+    isPIILabel.style.marginLeft = "5px";
+    isPIILabel.appendChild(isPIIInput);
+    isPIILabel.appendChild(document.createTextNode(" PII"));
+
+    // Create a remove button for each metadata field
+    var removeButton = document.createElement("span");
+    removeButton.className = "remove-metadata text-danger";
+    removeButton.textContent = "Remove";
+    removeButton.onclick = function () {
+      removeMetadataField(metadataItem);
+    };
+
+    metadataItem.appendChild(fieldNameInput);
+    metadataItem.appendChild(fieldValueInput);
+    metadataItem.appendChild(isPIILabel);
+    metadataItem.appendChild(removeButton);
+
+    metadataGroup.appendChild(metadataItem);
+  }
+
+  function removeMetadataField(metadataItem) {
+    var metadataGroup = document.getElementById("metadata-group");
+    var metadataItems = metadataGroup.getElementsByClassName("metadata-item");
+
+    // Limit removal if only 2 metadata fields remain
+    if (metadataItems.length <= 2) {
+      document.getElementById("error-message").textContent =
+        "You must keep at least 2 metadata fields.";
+      return;
+    } else {
+      document.getElementById("error-message").textContent = "";
+    }
+
+    metadataGroup.removeChild(metadataItem);
+  }
+
+  // UUID validation function
+  function isValidUUID(uuid) {
+    var uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  }
+
+  // Real-time Amount validation on input/paste
+  const amountField = document.getElementById("amount");
+
+  if (amountField) {
+    amountField.addEventListener("input", function () {
+      validateAmount(amountField);
+    });
+    amountField.addEventListener("paste", function () {
+      validateAmount(amountField);
+    });
+  }
+
+  function validateAmount(field) {
+    var amountRegex = /^([0]|([1-9][0-9]{0,17}))([.][0-9]{0,3}[1-9])?$/;
+    if (!amountRegex.test(field.value)) {
+      field.classList.add("is-invalid");
+      field.classList.remove("is-valid");
+    } else {
+      field.classList.remove("is-invalid");
+      field.classList.add("is-valid");
+    }
+  }
+
+  // Real-time UUID validation on input/paste
+  const depositIdField = document.getElementById("depositId");
+
+  if (depositIdField) {
+    depositIdField.addEventListener("input", function () {
+      validateDepositId(depositIdField);
+    });
+    depositIdField.addEventListener("paste", function () {
+      validateDepositId(depositIdField);
+    });
+  }
+
+  function validateDepositId(field) {
+    if (!isValidUUID(field.value)) {
+      field.classList.add("is-invalid");
+      field.classList.remove("is-valid");
+    } else {
+      field.classList.remove("is-invalid");
+      field.classList.add("is-valid");
+    }
+  }
+
+  // Real-time email validation for customerId
+  function validateEmail(field) {
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(field.value)) {
+      field.classList.add("is-invalid");
+      field.classList.remove("is-valid");
+      return false;
+    } else {
+      field.classList.remove("is-invalid");
+      field.classList.add("is-valid");
+      return true;
+    }
+  }
+
+  // Form validation and submission via AJAX
+  const refundForm = document.getElementById("refundForm");
+  if (refundForm) {
+    refundForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      var form = event.target;
+
+      // Trigger Bootstrap validation
+      if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+      }
+
+      // Additional custom validation
+      if (!validateMetadata()) {
+        return;
+      }
+
+      // Collect form data
+      var formData = new FormData(form);
+      var metadataFieldNames = formData.getAll("metadataFieldName[]");
+      var metadataFieldValues = formData.getAll("metadataFieldValue[]");
+      var metadataIsPII = formData.getAll("metadataIsPII[]");
+
+      // Construct metadata array
+      var metadata = [];
+      for (var i = 0; i < metadataFieldNames.length; i++) {
+        var fieldName = metadataFieldNames[i].trim();
+        var fieldValue = metadataFieldValues[i].trim();
+        var isPII = metadataIsPII[i] === "1" ? true : false;
+
+        if (fieldName === "" || fieldValue === "") {
+          continue; // Skip empty fields
+        }
+
+        var metadataItem = {
+          fieldName: fieldName,
+          fieldValue: fieldValue,
+        };
+
+        if (isPII) {
+          metadataItem.isPII = true;
+        }
+
+        metadata.push(metadataItem);
+      }
+
+      // Prepare payload
+      var payload = new URLSearchParams();
+      payload.append("depositId", formData.get("depositId").trim());
+      payload.append("amount", formData.get("amount").trim());
+
+      // Append metadata arrays
+      metadata.forEach(function (item) {
+        payload.append("metadataFieldName[]", item.fieldName);
+        payload.append("metadataFieldValue[]", item.fieldValue);
+        if (item.isPII) {
+          payload.append("metadataIsPII[]", "1");
+        }
+      });
+
+      // Disable the submit button and show the overlay
+      var submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      document.getElementById("overlay").style.display = "flex";
+
+      // Send AJAX request
+      fetch("/process-refund", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: payload.toString(),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          var alertContainer = document.getElementById("alert-container");
+          alertContainer.innerHTML = "";
+
+          // Hide the overlay and re-enable submit button
+          submitButton.disabled = false;
+          document.getElementById("overlay").style.display = "none";
+
+          if (data.success) {
+            // === LOGIC START: Determine Status and Color ===
+            
+            // 1. Determine which data object holds the ACTUAL status info
+            var refundInfo = null;
+
+            // Strategy: Look at Polling Data first (Final State), then Initiation Data
+            if (data.refundStatus) {
+                if (Array.isArray(data.refundStatus) && data.refundStatus.length > 0) {
+                     // V1: Array Response
+                     refundInfo = data.refundStatus[0];
+                } 
+                else if (data.refundStatus.data && data.refundStatus.data.status) {
+                     // V2: Wrapper Object (e.g. { status: "FOUND", data: { status: "COMPLETED" ... } })
+                     refundInfo = data.refundStatus.data;
+                } 
+                else if (data.refundStatus.status && data.refundStatus.status !== "NOT_FOUND" && data.refundStatus.status !== "FOUND") {
+                     // Fallback: Direct Object
+                     refundInfo = data.refundStatus;
+                }
+            }
+            
+            // If polling didn't find the transaction (or returned "NOT_FOUND"), check initiation data
+            if (!refundInfo && data.initiationData) {
+                 refundInfo = data.initiationData; 
+            }
+
+            // 2. Set Defaults
+            var status = refundInfo ? (refundInfo.status || "INITIATED") : "INITIATED";
+            var alertClass = "alert-info"; // Default blue
+            var displayMsg = "Refund request initiated.";
+
+            // 3. Status Interpretation Logic
+            if (status === "COMPLETED") {
+                displayMsg = "Refund successfully completed.";
+                alertClass = "alert-success";
+            } 
+            else if (status === "REJECTED" || status === "FAILED") {
+                alertClass = "alert-warning"; // Yellow/Orange for failures
+                displayMsg = "Refund was rejected.";
+                
+                // Extract Reason from various possible API locations (V1 vs V2)
+                var reason = "";
+                
+                if (refundInfo.rejectionReason) {
+                    // V1 Rejection
+                    reason = refundInfo.rejectionReason.rejectionMessage || refundInfo.rejectionReason.rejectionCode;
+                } 
+                else if (refundInfo.failureReason) {
+                    // V2 Failure
+                    reason = refundInfo.failureReason.failureMessage || refundInfo.failureReason.failureCode;
+                }
+                else if (refundInfo.failureMessage) {
+                    reason = refundInfo.failureMessage;
+                }
+
+                if (reason) {
+                    displayMsg += " <br><strong>Reason:</strong> " + reason;
+                }
+            } 
+            else if (status === "ACCEPTED" || status === "SUBMITTED" || status === "PENDING") {
+                alertClass = "alert-info";
+                displayMsg = "Refund submitted. Waiting for processing.";
+            }
+
+            // === LOGIC END ===
+
+            // Build the Alert HTML
+            var successAlert = document.createElement("div");
+            successAlert.className = "alert " + alertClass;
+            
+            // Construct the inner HTML
+            var htmlContent = `<strong>${status}</strong> <br/> ${displayMsg}`;
+            htmlContent += `<hr><small class="mb-0">Refund ID: ${data.refundId}</small>`;
+            
+            successAlert.innerHTML = htmlContent;
+            alertContainer.appendChild(successAlert);
+
+            // Only clear the form if it was actually successful
+            if (status === "COMPLETED") {
+                form.reset();
+                form.classList.remove("was-validated");
+                var inputs = form.querySelectorAll(".form-control");
+                inputs.forEach((input) => {
+                  input.classList.remove("is-valid", "is-invalid");
+                });
+                resetPredefinedMetadata();
+            }
+          } else {
+            // Show error alert (System/Validation Error)
+            var errorAlert = document.createElement("div");
+            errorAlert.className = "alert alert-danger";
+            errorAlert.innerHTML = `<strong>Error!</strong> ${
+              data.errorMessage || data.message || "Unknown error"
+            }`;
+            alertContainer.appendChild(errorAlert);
+          }
+        })
+        .catch((error) => {
+          var alertContainer = document.getElementById("alert-container");
+          alertContainer.innerHTML = "";
+
+          submitButton.disabled = false;
+          document.getElementById("overlay").style.display = "none";
+
+          var errorAlert = document.createElement("div");
+          errorAlert.className = "alert alert-danger";
+          errorAlert.innerHTML = `<strong>Error!</strong> An unexpected error occurred. Please try again later.`;
+          alertContainer.appendChild(errorAlert);
+
+          console.error("Error:", error);
+        });
+    
+    });
+  }
+
+  function validateMetadata() {
+    var metadataItems = document
+      .getElementById("metadata-group")
+      .getElementsByClassName("metadata-item");
+    var isValid = true;
+    var errorMessage = "";
+
+    for (var i = 0; i < metadataItems.length; i++) {
+      var item = metadataItems[i];
+      var fieldNameInput = item.querySelector(
+        'input[name="metadataFieldName[]"]'
+      );
+      var fieldValueInput = item.querySelector(
+        'input[name="metadataFieldValue[]"]'
+      );
+
+      // Check for orderId
+      if (fieldNameInput.value === "orderId") {
+        if (fieldValueInput.value === "ORD-123456789") {
+          isValid = false;
+          errorMessage =
+            "Please update the pre-filled orderId value before submitting.";
+          fieldValueInput.classList.add("is-invalid");
+          fieldValueInput.classList.remove("is-valid");
+          break;
+        } else {
+          fieldValueInput.classList.remove("is-invalid");
+          fieldValueInput.classList.add("is-valid");
+        }
+      }
+
+      // Check for customerId
+      if (fieldNameInput.value === "customerId") {
+        if (fieldValueInput.value === "customer@email.com") {
+          isValid = false;
+          errorMessage =
+            "Please update the pre-filled customerId value before submitting.";
+          fieldValueInput.classList.add("is-invalid");
+          fieldValueInput.classList.remove("is-valid");
+          break;
+        } else if (!validateEmail(fieldValueInput)) {
+          isValid = false;
+          errorMessage = "Please enter a valid email address for customerId.";
+          fieldValueInput.classList.add("is-invalid");
+          fieldValueInput.classList.remove("is-valid");
+          break;
+        } else {
+          fieldValueInput.classList.remove("is-invalid");
+          fieldValueInput.classList.add("is-valid");
+        }
+      }
+    }
+
+    if (!isValid) {
+      document.getElementById("error-message").textContent = errorMessage;
+    } else {
+      document.getElementById("error-message").textContent = "";
+    }
+
+    return isValid;
+  }
+
+  // Real-time validation for customerId field
+  const metadataGroup = document.getElementById("metadata-group");
+  if (metadataGroup) {
+    metadataGroup.addEventListener("input", function (event) {
+      var target = event.target;
+      if (target.name === "metadataFieldValue[]") {
+        var fieldNameInput = target
+          .closest(".metadata-item")
+          .querySelector('input[name="metadataFieldName[]"]');
+        if (fieldNameInput.value === "customerId") {
+          validateEmail(target);
+        }
+      }
+    });
+  }
+
+  function resetPredefinedMetadata() {
+    // Reset orderId
+    var orderIdField = document.querySelector(
+      'input[name="metadataFieldName[]"][value="orderId"]'
+    ).nextElementSibling;
+    if (orderIdField) {
+      orderIdField.value = "ORD-123456789";
+      orderIdField.classList.remove("is-valid");
+    }
+
+    // Reset customerId
+    var customerIdField = document.querySelector(
+      'input[name="metadataFieldName[]"][value="customerId"]'
+    ).nextElementSibling;
+    if (customerIdField) {
+      customerIdField.value = "customer@email.com";
+      customerIdField.classList.remove("is-valid");
+    }
+  }
+</script>

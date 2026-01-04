@@ -1,0 +1,3 @@
+ignoredBuiltDependencies:
+  - esbuild
+  - javascript-obfuscator

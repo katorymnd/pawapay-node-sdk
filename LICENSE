@@ -1,0 +1,19 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) 2025 Katorymnd Web Solutions. All Rights Reserved.
+
+NOTICE: This software is the proprietary property of Katorymnd Web Solutions. The intellectual property contained herein is protected by copyright and other intellectual property laws.
+
+1. LICENSE GRANT
+Subject to the terms of this Agreement and payment of the applicable fees, Katorymnd Web Solutions grants you a limited, non-exclusive, non-transferable, revocable license to use the PawaPay Node SDK ("Software") solely for the purpose of integrating PawaPay services into your applications.
+
+2. RESTRICTIONS
+You may NOT:
+
+* Distribute, sub-license, rent, lease, or lend the Software to any third party.
+* Make the Software available to the public in any form (including open-source repositories).
+* Reverse engineer, decompile, or disassemble the Software (except strictly to the extent that such activity is expressly permitted by applicable law notwithstanding this limitation).
+* Remove or alter any copyright notices or proprietary markings on the Software.
+
+3. DISCLAIMER OF WARRANTIES
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. KATORYMND WEB SOLUTIONS DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MNO Availability and Active Configuration</title>
+    <style>
+    /* Identical CSS from your PHP file */
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f7f7f9; opacity: 0; transition: opacity 0.5s ease-in-out; }
+    h1 { text-align: center; }
+    .meta { text-align: center; margin-bottom: 16px; color: #333; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #eceff4; margin: 0 6px; font-size: 12px; }
+    .section { background-color: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+    .section h2 { color: #333; border-bottom: 2px solid #007BFF; padding-bottom: 10px; }
+    .country-section { margin-top: 20px; }
+    .country-name { font-size: 20px; margin-bottom: 10px; color: #333; }
+    .provider { margin-left: 20px; margin-bottom: 16px; display: grid; grid-template-columns: 64px auto; grid-gap: 12px; align-items: start; }
+    .provider .avatar { width: 48px; height: 48px; border-radius: 6px; background: #f0f3f7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .provider .avatar img { width: 100%; height: 100%; object-fit: contain; }
+    .provider-name { font-size: 18px; color: #007BFF; }
+    .owner, .currency { font-size: 14px; color: #555; }
+    .operation-list { margin-left: 0; padding-left: 18px; }
+    .operation-item { font-size: 14px; color: #444; margin: 6px 0; }
+    .separator { height: 1px; background-color: #e5e9f0; margin: 20px 0; }
+    .hint { font-size: 12px; color: #666; margin-left: 6px; }
+    .extras { font-size: 12px; color: #555; margin-left: 6px; }
+    .instr { margin: 6px 0 0 0; padding-left: 18px; }
+    .instr li { font-size: 12px; color: #444; margin: 3px 0; }
+    .chip { display: inline-block; padding: 2px 6px; border-radius: 999px; background: #eef3ff; font-size: 12px; color: #0a58ca; margin-left: 6px; }
+    .muted { color: #777; }
+    </style>
+</head>
+
+<body>
+    <h1>MNO Availability and Active Configuration</h1>
+    <div class="meta">
+        <span class="pill">Environment: <%= environment %></span>
+        <span class="pill">API version: <%= apiVersion %></span>
+        <% if (companyName) { %><span class="pill">Company: <%= companyName %></span><% } %>
+        <% if (merchantName) { %><span class="pill">Merchant: <%= merchantName %></span><% } %>
+    </div>
+
+    <% if (availability && availability.length > 0) { %>
+    <div class="section">
+        <h2>Available Providers</h2>
+        <% availability.forEach(function(countryBlock) { %>
+            <div class="country-section">
+                <div class="country-name">Country: <%= countryBlock.country %></div>
+
+                <% countryBlock.providers.forEach(function(p) { 
+                    const code = p.code;
+                    // Safe access to lookup map
+                    const enriched = (activeConfLookup.countries[countryBlock.country] && activeConfLookup.countries[countryBlock.country][code]) 
+                                     ? activeConfLookup.countries[countryBlock.country][code] 
+                                     : null;
+
+                    const displayName = p.displayName || (enriched ? enriched.displayName : code) || code;
+                    const ownerName   = p.ownerName || (enriched ? enriched.ownerName : 'N/A');
+                    const currency    = p.currency || (enriched && enriched.currencies[0] ? enriched.currencies[0] : 'N/A');
+                    const logo        = p.logo || (enriched ? enriched.logo : null);
+                    const limits      = enriched ? enriched.operations : {};
+
+                    // Merge ops logic
+                    let ops = [];
+                    p.operations.forEach(function(op) {
+                        const ot = op.operationType;
+                        const lim = limits[ot] || {};
+                        ops.push({
+                            operationType: ot,
+                            status: op.status,
+                            min: lim.min || 'N/A',
+                            max: lim.max || 'N/A',
+                            authType: lim.authType,
+                            pinPrompt: lim.pinPrompt,
+                            pinPromptRevivable: lim.pinPromptRevivable,
+                            pinPromptInstructions: lim.pinPromptInstructions,
+                            decimals: lim.decimals
+                        });
+                    });
+                %>
+                
+                <div class="provider">
+                    <div class="avatar">
+                        <% if (logo) { %>
+                        <img src="<%= logo %>" alt="<%= displayName %>">
+                        <% } else { %>
+                        <span class="muted">N/A</span>
+                        <% } %>
+                    </div>
+                    <div>
+                        <div class="provider-name">
+                            <%= displayName %>
+                            <span class="hint">(<%= code %>)</span>
+                            <% if (displayName && displayName !== code) { %>
+                            <span class="chip">displayName</span>
+                            <% } %>
+                        </div>
+                        <div class="owner">Name to customer: <%= ownerName %></div>
+                        <div class="currency">Primary currency: <%= currency %></div>
+
+                        <% if (ops.length > 0) { %>
+                        <ul class="operation-list">
+                            <% ops.forEach(function(row) { %>
+                            <li class="operation-item">
+                                Operation: <strong><%= row.operationType %></strong>,
+                                Status: <%= row.status %>,
+                                Min: <%= row.min %>,
+                                Max: <%= row.max %>
+                                
+                                <% if (row.authType || row.pinPrompt || row.decimals || row.pinPromptRevivable !== null) { %>
+                                <span class="extras">
+                                    <% if (row.authType) { %> - Auth: <%= row.authType %><% } %>
+                                    <% if (row.pinPrompt) { %> - PIN: <%= row.pinPrompt %><% } %>
+                                    <% if (row.pinPromptRevivable !== null) { %> - Revivable: <%= row.pinPromptRevivable ? 'Yes' : 'No' %><% } %>
+                                    <% if (row.decimals) { %> - Decimals: <%= row.decimals %><% } %>
+                                </span>
+                                <% } %>
+
+                                <% 
+                                   const instr = row.pinPromptInstructions; 
+                                   if (instr && instr.channels && instr.channels.length > 0) {
+                                %>
+                                <ul class="instr">
+                                    <% instr.channels.forEach(function(ch) { 
+                                        const ctype = ch.type || 'CHANNEL';
+                                        let cname = null;
+                                        if (ch.displayName) {
+                                            cname = (typeof ch.displayName === 'object' && ch.displayName.en) ? ch.displayName.en : ch.displayName;
+                                        }
+                                        const quick = ch.quickLink;
+                                        let steps = [];
+                                        if (ch.instructions && ch.instructions.en) {
+                                            ch.instructions.en.forEach(s => { if(s.text) steps.push(s.text); });
+                                        }
+                                    %>
+                                    <li>
+                                        <strong><%= ctype %></strong>
+                                        <% if (cname) { %>, <%= cname %><% } %>
+                                        <% if (quick) { %>, quick: <code><%= quick %></code><% } %>
+                                        <% if (steps.length > 0) { %>
+                                            <ul class="instr">
+                                                <% steps.forEach(function(t) { %> <li><%= t %></li> <% }); %>
+                                            </ul>
+                                        <% } %>
+                                    </li>
+                                    <% }); %>
+                                </ul>
+                                <% } %>
+                            </li>
+                            <% }); %>
+                        </ul>
+                        <% } else { %>
+                        <div class="muted">No operations listed.</div>
+                        <% } %>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <div class="separator"></div>
+        <% }); %>
+    </div>
+    <% } else { %>
+    <div class="section">
+        <h2>Available Providers</h2>
+        <p class="muted">No data available.</p>
+    </div>
+    <% } %>
+
+    <script>
+    window.addEventListener('load', function() { document.body.style.opacity = '1'; });
+    </script>
+</body>
+</html>

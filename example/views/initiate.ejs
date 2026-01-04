@@ -1,0 +1,245 @@
+    <!-- Pre-loader -->
+    <div class="preloader" id="preloader">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div class="wizard-card card p-4 shadow-sm">
+      <h2 class="text-center mb-4 fw-semibold">Initiate Deposit</h2>
+
+      <!-- Progress bar -->
+      <ul class="progress-bar-steps mb-0" id="progressBar">
+        <li class="active">Country</li>
+        <li>Operator</li>
+        <li>Details</li>
+        <li>Confirm</li>
+      </ul>
+
+      <form id="depositForm" novalidate>
+        <!-- Hidden fields -->
+        <input type="hidden" id="hvCountry" name="selectedCountry" />
+        <input type="hidden" id="hvOperator" name="selectedOperator" />
+        <input type="hidden" id="hvAmount" name="detailAmount" />
+        <input type="hidden" id="hvPhone" name="detailPhone" />
+        <input type="hidden" id="hvDesc" name="detailDesc" />
+        <input type="hidden" id="hvCurrency" name="currencyDesc" />
+        <input type="hidden" id="hvConfirm" name="confirmed" value="false" />
+
+        <!-- STEP 1: Country -->
+        <section class="step active" id="step-1">
+          <div class="mb-3">
+            <label for="country" class="form-label">Country:</label>
+            <select id="country" name="country" required class="form-select">
+              <option value="" disabled selected>Choose Country</option>
+              <option value="Benin" data-currency="XOF">Benin</option>
+              <option value="Burkina Faso" data-currency="XOF">
+                Burkina Faso
+              </option>
+              <option value="Cameroon" data-currency="XAF">Cameroon</option>
+              <option value="Congo" data-currency="XAF">
+                Congo-Brazzaville
+              </option>
+              <option value="Congo (DRC)" data-currency="CDF">
+                Congo-Kinshasa (CDF)
+              </option>
+              <option value="Congo (DRC)" data-currency="USD">
+                Congo-Kinshasa (USD)
+              </option>
+              <option value="Cote D'Ivoire" data-currency="XOF">
+                Cote D'Ivoire
+              </option>
+              <option value="Gabon" data-currency="XAF">Gabon</option>
+              <option value="Ghana" data-currency="GHS">Ghana</option>
+              <option value="Kenya" data-currency="KES">Kenya</option>
+              <option value="Malawi" data-currency="MWK">Malawi</option>
+              <option value="Mozambique" data-currency="MZN">Mozambique</option>
+              <option value="Nigeria" data-currency="NGN">Nigeria</option>
+              <option value="Rwanda" data-currency="RWF">Rwanda</option>
+              <option value="Senegal" data-currency="XOF">Senegal</option>
+              <option value="Sierra Leone" data-currency="SLE">
+                Sierra Leone
+              </option>
+              <option value="Uganda" data-currency="UGX">Uganda</option>
+              <option value="Zambia" data-currency="ZMW">Zambia</option>
+            </select>
+            <div class="invalid-feedback">Please select a country.</div>
+          </div>
+          <button type="button" class="btn btn-gradient w-100" id="step1Next">
+            Next
+          </button>
+        </section>
+
+        <!-- STEP 2: Operator -->
+        <section class="step" id="step-2">
+          <label class="form-label mb-3">Select your mobile operator</label>
+          <div id="mnoContainer" class="operator-container"></div>
+          <div class="alert alert-danger py-2 mt-2 d-none" id="mnoError">
+            Please choose an operator
+          </div>
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-secondary" data-prev>
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" data-next>
+              Next
+            </button>
+          </div>
+        </section>
+
+        <!-- STEP 3: Details -->
+        <section class="step" id="step-3">
+          <div class="mb-3">
+            <label class="form-label">Amount:</label>
+            <div class="input-group">
+              <span class="input-group-text" id="currencyLabel"></span>
+              <input
+                type="text"
+                id="amount"
+                class="form-control"
+                placeholder="0.00"
+                required
+              />
+              <div class="invalid-feedback">
+                Positive number (max 2 decimals).
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Payer's Phone Number:</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <img
+                  id="countryFlag"
+                  src="public/flags/ug.png"
+                  width="24"
+                  height="16"
+                  class="me-1"
+                />
+                <small id="dialCode"></small>
+              </span>
+              <input
+                type="tel"
+                id="payerMsisdn"
+                class="form-control"
+                placeholder="712345678"
+                required
+              />
+              <div class="invalid-feedback">Enter a valid phone.</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description:</label>
+            <input
+              type="text"
+              id="description"
+              class="form-control"
+              maxlength="22"
+              required
+            />
+            <div class="invalid-feedback">
+              Only letters, numbers &amp; spaces.
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" data-prev>
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" data-next>
+              Next
+            </button>
+          </div>
+        </section>
+
+        <!-- STEP 4: Confirm -->
+        <section class="step" id="step-4">
+          <p class="mb-3">Please review and confirm:</p>
+          <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Country</span> <strong id="summaryCountry"></strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Operator</span> <strong id="summaryOperator"></strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Amount</span> <strong id="summaryAmount"></strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Phone</span> <strong id="summaryPhone"></strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Description</span> <strong id="summaryDesc"></strong>
+            </li>
+          </ul>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" data-prev>
+              Previous
+            </button>
+            <button type="button" class="btn btn-success" id="openModal">
+              Confirm &amp; Pay
+            </button>
+          </div>
+        </section>
+      </form>
+
+      <div class="powered-by-container text-center mt-4">
+        Powered by
+        <img
+          src="/images/powered_by_pawapay.png"
+          alt="logo"
+          class="pawapay-logo"
+        />
+      </div>
+    </div>
+
+    <!-- Payment modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Payment</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="modalDetails"></div>
+            <div class="text-center my-3 d-none" id="loadingSpinner">
+              <div class="spinner-border text-primary"></div>
+              <p class="mt-2 mb-0">Processing…</p>
+            </div>
+            <div class="alert alert-danger d-none" id="errorBox"></div>
+            <div class="alert alert-success d-none" id="successBox"></div>
+          </div>
+          <div class="modal-footer justify-content-between align-items-center">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-success" id="payBtn">
+              Pay
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1️⃣ Embed catalog as JSON -->
+    <script id="country-catalog-data" type="application/json">
+      <%- JSON.stringify(catalog).replace(/</g, '\\u003c') %>
+    </script>
+
+    <!-- 2️⃣ Embed availability JSON (no public fetch) -->
+    <script id="availability-data" type="application/json">
+      <%- JSON.stringify(availabilityData).replace(/</g, '\\u003c') %>
+    </script>
+
+    <!-- 3️⃣ Embed active_conf JSON (no public fetch) -->
+    <script id="active-conf-data" type="application/json">
+      <%- JSON.stringify(activeConfData).replace(/</g, '\\u003c') %>
+    </script>
+
+    <script type="module" src="/js/addDependencies.js"></script>

@@ -1,0 +1,570 @@
+/* ───────── Root Design Tokens ───────── */
+:root {
+  /* Base palette */
+  --primary: #0c5de6;
+  --primary-dark: #0846b3;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text: #333333;
+
+  /* PawaPay palette */
+  --pp-hue1: #0051ff;
+  --pp-hue2: #865bff;
+  --pp-hue3: #38d2ff;
+  --pp-light: #e7efff;
+
+  /* Progress-bullet size */
+  --bullet-d: 2.4rem;
+  --bullet-r: 1.2rem;
+
+  /* Extras */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-brd: rgba(255, 255, 255, 0.35);
+  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --dur: 0.25s;
+}
+
+/* ───────── Global Reset ───────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ───────── Layout (shared pages) ───────── */
+body {
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  opacity: 1; /* Ensure body is visible by default */
+  transition: opacity 0.5s ease-in-out; /* Smooth transition when showing */
+}
+
+header {
+  background: var(--primary);
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+}
+
+nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #fff;
+  transition: width var(--dur) ease;
+}
+
+nav a:hover::after {
+  width: 100%;
+}
+
+main {
+  width: min(92%, 850px);
+  margin: 3rem auto 2rem;
+  background: var(--surface);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+  color: var(--primary);
+  margin-top: 0;
+}
+
+ul {
+  list-style: disc inside;
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+}
+
+li {
+  margin: 0.5rem 0;
+}
+
+footer {
+  margin-top: auto;
+  background: var(--surface);
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #555;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  nav {
+    margin-top: 0.75rem;
+  }
+}
+
+/* ───────── Deposit Wizard Exclusive ───────── */
+body.deposit {
+  background: radial-gradient(120% 100% at 50% 0%, var(--bg) 0%, #ffffff 70%)
+    no-repeat fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+}
+
+/* Pre-loader */
+.preloader {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  z-index: 1055;
+  transition: opacity 0.4s ease;
+}
+.preloader.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Wizard shell (glass-morphism) */
+.wizard-card {
+  width: 100%;
+  max-width: 660px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-brd);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(30px) saturate(140%);
+  border-radius: var(--radius-lg);
+}
+
+/* ───────── Progress bullets ───────── */
+.progress-bar-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  counter-reset: step;
+}
+.progress-bar-steps li {
+  list-style: none;
+  text-align: center;
+  position: relative;
+  flex: 1;
+  color: #6c757d;
+  padding-bottom: 3.75rem;
+  font-weight: 500;
+  opacity: 0.6;
+  transition: opacity var(--dur);
+}
+.progress-bar-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  width: var(--bullet-d);
+  height: var(--bullet-d);
+  line-height: var(--bullet-d);
+  display: block;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #d7d9e4;
+  font-weight: 600;
+}
+.progress-bar-steps li.active,
+.progress-bar-steps li.completed {
+  opacity: 1;
+  color: var(--pp-hue1);
+}
+.progress-bar-steps li.active::before {
+  border-color: var(--pp-hue1);
+  animation: pulse 1.8s infinite;
+}
+.progress-bar-steps li.completed::before {
+  background: linear-gradient(135deg, var(--pp-hue1), var(--pp-hue2));
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Connector — desktop / tablet only */
+.progress-bar-steps li + li::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--bullet-r) + 0.1rem); /* mid-height */
+  left: calc(-50% + var(--bullet-r)); /* flush with previous bullet */
+  width: calc(100% - var(--bullet-d)); /* flush with current bullet */
+  height: 4px;
+  background: #d7d9e4;
+  z-index: -1;
+}
+.progress-bar-steps li.completed + li::after {
+  background: linear-gradient(90deg, var(--pp-hue1), var(--pp-hue2));
+}
+
+/* Steps container */
+.step {
+  display: none;
+  animation: fadeSlide var(--dur) ease;
+}
+.step.active {
+  display: block;
+}
+
+/* Operator cards */
+.operator-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.operator-card {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem 0.8rem;
+  text-align: center;
+  flex: 1 1 calc(50% - 1rem);
+  min-width: 120px;
+  background: var(--glass-bg);
+  transition:
+    transform var(--dur),
+    box-shadow var(--dur);
+  overflow: hidden;
+}
+.operator-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.25);
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity var(--dur);
+  pointer-events: none;
+}
+.operator-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.operator-card:hover::after {
+  opacity: 1;
+}
+.operator-card.selected::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--pp-hue1), var(--pp-hue2));
+  z-index: -1;
+}
+
+/* Disabled operator */
+.operator-card.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.operator-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.operator-card img {
+  display: block;
+  margin: 0 auto 0.5rem;
+}
+
+/* Buttons */
+.btn-gradient {
+  background: linear-gradient(90deg, var(--pp-hue1), var(--pp-hue2));
+  border: none !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.btn-gradient:hover,
+.btn-gradient:focus {
+  filter: brightness(1.05);
+}
+
+/* Powered-by footer */
+.powered-by-container {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+.pawapay-logo {
+  height: 20px;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+/* ───────── Payout Page Styles ───────── */
+/* Operator card styles for payout page */
+ .operator-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+ .operator-card {
+  padding: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  text-align: center;
+  width: 120px;
+  position: relative;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1 1 120px;
+  max-width: 150px;
+  cursor: pointer;
+}
+
+ .operator-card img {
+  width: 80px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+ .operator-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+}
+
+ .operator-card.selected {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.operator-card.disabled {
+  border-color: #ddd;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+ .unavailable-text {
+  color: red;
+  font-size: 0.9em;
+}
+
+/* Alert placeholder */
+#alert-placeholder {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: none;
+}
+
+#alert-placeholder .alert {
+  cursor: pointer;
+}
+
+/* Enhanced powered-by styles */
+ .powered-by-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(230, 230, 230, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  padding: 10px;
+  border-radius: 5px;
+}
+
+ .powered-by-text {
+  font-size: 1rem;
+  color: #333;
+  margin-right: 8px;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+ .pawapay-logo {
+  max-width: 120px;
+  height: auto;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+/* Hover effect to enhance the "ghosty" feel */
+ .powered-by-text,
+ .pawapay-logo {
+  opacity: 0.5;
+}
+
+ .powered-by-container:hover .powered-by-text,
+ .powered-by-container:hover .pawapay-logo {
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Loader styles */
+#loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+}
+
+#loader.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+#loader:not(.visible) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Optional extra class if you prefer */
+#loader.hidden {
+  display: none !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  display: flex;
+}
+
+/* ───────── Responsive tweaks ───────── */
+@media (max-width: 768px) {
+  .progress-bar-steps {
+    flex-wrap: wrap;
+  }
+  .progress-bar-steps li {
+    flex: 1 1 50%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Stack bullets but REMOVE all connectors */
+  .progress-bar-steps {
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+  }
+  .progress-bar-steps li {
+    flex: none;
+    margin: 0 0 1.7rem;
+  }
+  .progress-bar-steps li::after,
+  .progress-bar-steps li + li::after {
+    display: none !important; /* hide horizontal & vertical lines */
+  }
+}
+
+/* Payout page responsive behavior */
+@media (max-width: 800px) {
+   .operator-card {
+    width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 500px) {
+   .operator-card {
+    width: calc(100% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .pawapay-logo {
+    max-width: 100px;
+  }
+}
+
+/* ───────── Keyframes ───────── */
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 81, 255, 0.36);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 81, 255, 0);
+  }
+}
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.operator-card {
+  padding: 1rem;
+  border: 2px solid #ddd;
+    border-top-color: rgb(221, 221, 221);
+    border-right-color: rgb(221, 221, 221);
+    border-bottom-color: rgb(221, 221, 221);
+    border-left-color: rgb(221, 221, 221);
+  border-radius: 10px;
+  text-align: center;
+  width: 120px;
+  position: relative;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1 1 120px;
+  max-width: 150px;
+  cursor: pointer;
+}

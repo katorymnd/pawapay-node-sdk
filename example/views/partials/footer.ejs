@@ -1,0 +1,15 @@
+<footer>
+    <p>&copy; <span class="copyright-year"></span> PawaPay Node SDK, created by Katorymnd Web Solutions. All rights reserved.</p>
+</footer>
+
+<script>
+    // Update all copyright years automatically
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentYear = new Date().getFullYear();
+        const yearElements = document.querySelectorAll('.copyright-year');
+        
+        yearElements.forEach(element => {
+            element.textContent = currentYear;
+        });
+    });
+</script>

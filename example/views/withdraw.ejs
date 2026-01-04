@@ -1,0 +1,203 @@
+<main>
+    <div class="container mt-5 mb-5">
+      <h1 class="mb-4 text-center">Initiate Payout</h1>
+      <form id="payout-form">
+        <!-- Recipient Details -->
+        <div id="recipients">
+          <div class="recipient card mb-4 p-3">
+            <div class="card-body">
+              <h4 class="card-title">Recipient 1</h4>
+              <!-- Country Selection -->
+              <div class="mb-3">
+                <label for="country-1" class="form-label">Country:</label>
+                <select
+                  id="country-1"
+                  name="recipients[0][country]"
+                  class="form-select country-select"
+                >
+                  <option value="" disabled selected>Choose Country</option>
+                  <!-- Add countries here -->
+                  <option value="Benin" data-currency="XOF">Benin</option>
+                  <option value="Burkina Faso" data-currency="XOF">
+                    Burkina Faso
+                  </option>
+                  <option value="Cameroon" data-currency="XAF">Cameroon</option>
+                  <option value="Congo" data-currency="XAF">
+                    Congo-Brazzaville
+                  </option>
+                  <option value="Congo (DRC)" data-currency="CDF">
+                    Congo-Kinshasa (CDF)
+                  </option>
+                  <option value="Congo (DRC)" data-currency="USD">
+                    Congo-Kinshasa (USD)
+                  </option>
+                  <option value="Cote D'Ivoire" data-currency="XOF">
+                    Cote D'Ivoire
+                  </option>
+                  <option value="Gabon" data-currency="XAF">Gabon</option>
+                  <option value="Ghana" data-currency="GHS">Ghana</option>
+                  <option value="Kenya" data-currency="KES">Kenya</option>
+                  <option value="Malawi" data-currency="MWK">Malawi</option>
+                  <option value="Mozambique" data-currency="MZN">
+                    Mozambique
+                  </option>
+                  <option value="Nigeria" data-currency="NGN">Nigeria</option>
+                  <option value="Rwanda" data-currency="RWF">Rwanda</option>
+                  <option value="Senegal" data-currency="XOF">Senegal</option>
+                  <option value="Sierra Leone" data-currency="SLE">
+                    Sierra Leone
+                  </option>
+                  <option value="Uganda" data-currency="UGX">Uganda</option>
+                  <option value="Zambia" data-currency="ZMW">Zambia</option>
+                  <!-- Add other countries as needed -->
+                </select>
+              </div>
+              <!-- MNO Selection -->
+              <div class="mb-3">
+                <label class="form-label mb-3">Operator</label>
+                <div id="mno-cards-container-1" class="operator-container">
+                  <!-- MNO cards dynamically generated here -->
+                </div>
+                <input
+                  type="hidden"
+                  id="selectedMno-1"
+                  name="recipients[0][correspondent]"
+                  class="selected-mno-input"
+                />
+              </div>
+              <!-- Amount with Currency Prefix -->
+              <div class="mb-3">
+                <label for="amount-1" class="form-label">Amount:</label>
+                <div class="input-group has-validation">
+                  <span class="input-group-text" id="currency-symbol-1"
+                    >UGX</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control amount-input"
+                    id="amount-1"
+                    name="recipients[0][amount]"
+                    placeholder="Amount"
+                    aria-label="Amount"
+                  />
+                </div>
+              </div>
+              <!-- Recipient's Phone Number -->
+              <div class="mb-3">
+                <label for="recipientMsisdn-1" class="form-label"
+                  >Recipient's Phone Number</label
+                >
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <img
+                      id="countryFlag-1"
+                      src="flags/ug.png"
+                      alt="Flag"
+                      width="24"
+                      height="16"
+                      class="me-2"
+                    />
+                    <span id="countryCode-1">+</span>
+                  </span>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="recipientMsisdn-1"
+                    name="recipients[0][recipientMsisdn]"
+                  />
+                </div>
+              </div>
+              <!-- Statement Description -->
+              <div class="mb-3">
+                <label for="statementDescription-1" class="form-label"
+                  >Statement Description</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="statementDescription-1"
+                  name="recipients[0][statementDescription]"
+                />
+              </div>
+
+              <!-- Metadata (Optional) -->
+              <div class="mb-3">
+                <label class="form-label">Metadata (Optional)</label>
+                <div id="metadata-1">
+                  <div class="row mb-2 metadata-item">
+                    <div class="col-md-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="recipients[0][metadata][0][fieldName]"
+                        placeholder="Field Name"
+                      />
+                    </div>
+                    <div class="col-md-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="recipients[0][metadata][0][fieldValue]"
+                        placeholder="Field Value"
+                      />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                      <button
+                        type="button" 
+                        style="padding: 5px 0px;"
+                        class="btn btn-outline-danger remove-metadata w-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary add-metadata"
+                  data-recipient-index="1"
+                >
+                  Add Metadata
+                </button>
+              </div>
+              <!-- <button
+                type="button"
+                class="btn btn-outline-danger remove-recipient"
+              >
+                Remove Recipient
+              </button> -->
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-primary" id="add-recipient">
+            Add Another Recipient
+          </button>
+          <button type="submit" class="btn btn-success">Initiate Payout</button>
+        </div>
+      </form>
+      <!-- Powered by Pawapay Logo -->
+      <div class="powered-by-container text-center mt-4">
+        <span class="powered-by-text">Powered by</span>
+        <img
+          src="images/powered_by_pawapay.png"
+          alt="Pawapay Logo"
+          class="pawapay-logo"
+        />
+      </div>
+      <div id="alert-placeholder"></div>
+      <div
+        id="loader"
+        class="d-flex justify-content-center align-items-center visible"
+      >
+        <div class="spinner-border text-light" role="status">
+          <span class="visually-hidden">Processing...</span>
+        </div>
+      </div>
+    </div>
+</main>
+<!-- In your withdraw.ejs template, add this script tag -->
+<script id="country-catalog-data" type="application/json">
+  <%- JSON.stringify(catalog) %>
+</script>
+    <script type="module" src="/js/addDependencies.js"></script>

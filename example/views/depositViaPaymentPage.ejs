@@ -1,0 +1,152 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">PawaPay Hosted Checkout</h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <p class="text-muted">
+              This demo simulates a shopping cart checkout. Clicking "Pay Now" will create a session and redirect you to PawaPay's secure payment page.
+            </p>
+          </div>
+
+          <div class="card bg-light border-0 mb-4">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-3 text-muted text-uppercase fw-bold">Order Summary</h6>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Premium Subscription</span>
+                <span class="fw-bold">4,500 UGX</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Service Fee</span>
+                <span class="fw-bold">500 UGX</span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="h5 mb-0">Total</span>
+                <span class="h4 mb-0 text-primary">5,000 UGX</span>
+              </div>
+            </div>
+          </div>
+
+          <form id="paymentPageForm">
+            <input type="hidden" name="amount" value="5000">
+            <input type="hidden" name="currency" value="UGX">
+            <input type="hidden" name="country" value="UGA">
+            <input type="hidden" name="msisdn" value="256783456789">
+            <input type="hidden" name="description" value="DemoOrder123">
+            <input type="hidden" name="reason" value="Subscription">
+            
+            <input type="hidden" name="returnUrl" value="https://example.com/deposit-page-success"> 
+          </form>
+
+          <div class="d-grid gap-2">
+            <!-- Save original button text in data-orig for restoration -->
+            <button id="btnPayNow" class="btn btn-lg btn-success" data-orig-text="Pay Now">
+              Pay Now <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </button>
+          </div>
+
+          <div id="loader" class="text-center mt-3 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Creating secure session...</p>
+          </div>
+          
+          <div id="errorAlert" class="alert alert-danger mt-3 d-none" role="alert"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnPayNow = document.getElementById('btnPayNow');
+    const loader = document.getElementById('loader');
+    const errorAlert = document.getElementById('errorAlert');
+    const form = document.getElementById('paymentPageForm');
+
+    // Helper to show loading state on the button
+    function setButtonLoading(button, loadingText = 'Redirecting...') {
+      // store original content if not already stored
+      if (!button.dataset.origHtml) {
+        button.dataset.origHtml = button.innerHTML;
+      }
+      button.disabled = true;
+      button.classList.add('position-relative');
+      // Replace content with text + small spinner
+      button.innerHTML = `${loadingText} <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>`;
+      // add aria attribute for accessibility
+      button.setAttribute('aria-busy', 'true');
+    }
+
+    // Helper to restore button state
+    function restoreButton(button) {
+      if (button.dataset.origHtml) {
+        button.innerHTML = button.dataset.origHtml;
+      }
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.classList.remove('position-relative');
+    }
+
+    btnPayNow.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      // 1. UI Loading State on button
+      setButtonLoading(btnPayNow, 'Redirecting...');
+
+      // hide global loader (we're using the button spinner)
+      loader.classList.add('d-none');
+      errorAlert.classList.add('d-none');
+
+      // 2. Prepare Payload from hidden inputs
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        console.log("🚀 Initiating Payment Page Session...", payload);
+
+        // 3. Call Backend
+        const response = await fetch('pawapay/hosted-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        // If backend returned non-JSON or a non-2xx, attempt to parse
+        let result;
+        try {
+          result = await response.json();
+        } catch (jsonErr) {
+          throw new Error('Invalid response from server');
+        }
+
+        if (response.ok && result && (result.success && result.redirectUrl)) {
+          console.log("✅ Session created. Redirecting to:", result.redirectUrl);
+          // 4. Redirect User to PawaPay
+          // Give browser a tiny moment to render the button spinner, then navigate
+          // (no await, navigation will stop JS execution)
+          window.location.href = result.redirectUrl;
+        } else {
+          // If backend responded but indicated failure, throw the message to show
+          const message = result.message || result.errorMessage || result.error || 'Failed to create session';
+          throw new Error(message);
+        }
+
+      } catch (error) {
+        console.error("❌ Error:", error);
+        // Show error block
+        errorAlert.textContent = error.message || String(error);
+        errorAlert.classList.remove('d-none');
+
+        // Restore button so user can retry
+        restoreButton(btnPayNow);
+      }
+    });
+  });
+</script>
