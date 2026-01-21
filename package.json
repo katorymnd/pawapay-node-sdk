@@ -1,6 +1,6 @@
 {
   "name": "@katorymnd/pawapay-node-sdk",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Official Premium Node.js SDK by Katorymnd Web Solutions for PawaPay mobile money API integration.",
   "main": "src/index.js",
   "exports": {
